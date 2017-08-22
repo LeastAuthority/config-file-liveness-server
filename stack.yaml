@@ -63,4 +63,12 @@ extra-package-dbs: []
 # extra-lib-dirs: [/path/to/dir]
 # 
 # Allow a newer minor version of GHC than the snapshot specifies
-# compiler-check: newer-minor
+# compiler-check: newer-minor# compiler-check: newer-minor
+
+# Allow `stack image container` to build a Docker image.
+image:
+  container:
+    base: "scratch"
+    name: "leastauthority/config-file-liveness-server"
+    entrypoints:
+      - "config-file-liveness-server-exe"
