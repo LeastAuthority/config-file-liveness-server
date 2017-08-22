@@ -42,14 +42,8 @@ data Liveness = Liveness {
   currentModified :: UTCTime
   } deriving (Eq, Show, Generic)
 
--- For symmetry: an alias for Get indicating aliveness (200 response).
-type GetAlive = Get
--- A request resulting in a non-alive response.
-type GetNotAlive = Verb 'GET 503 -- Service Unavailable
-
 -- An HTTP endpoint at / that returns a JSON-encoded Liveness structure.
-type LivenessProbeAPI1 = GetAlive '[JSON] Liveness
-                    -- :<|> GetNotAlive '[JSON] Liveness
+type LivenessProbeAPI1 = Get '[JSON] Liveness
 
 instance ToJSON Liveness
 
