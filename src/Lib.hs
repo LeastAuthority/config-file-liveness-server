@@ -36,7 +36,7 @@ someFunc = putStrLn "someFunc"
 data Liveness = Liveness {
   originalModified :: UTCTime,
   currentModified :: UTCTime
-} deriving (Eq, Show, Generic)
+  } deriving (Eq, Show, Generic)
 
 -- For symmetry: an alias for Get indicating aliveness (200 response).
 type GetAlive = Get
@@ -49,13 +49,14 @@ type LivenessProbeAPI1 = GetAlive '[JSON] Liveness
 
 instance ToJSON Liveness
 
-livenessServer1 :: Server LivenessProbeAPI1
-livenessServer1 = return (
-  Liveness (posixSecondsToUTCTime 1) (posixSecondsToUTCTime 2)
+livenessServer1 :: UTCTime -> Server LivenessProbeAPI1
+livenessServer1 initialModificationTime = return (
+  Liveness initialModificationTime (posixSecondsToUTCTime 2)
   )
 
 livenessProbeAPI :: Proxy LivenessProbeAPI1
 livenessProbeAPI = Proxy
 
-app1 :: Application
-app1 = serve livenessProbeAPI livenessServer1
+app1 :: UTCTime -> Application
+app1 initialModificationTime =
+  serve livenessProbeAPI $ livenessServer1 initialModificationTime
