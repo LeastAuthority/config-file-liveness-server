@@ -28,9 +28,6 @@ import Network.Wai (
   )
 import GHC.Generics (Generic)
 
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
-
 -- The data we'll return in a response (above and beyond the status code which
 -- is what folks probably really care about).
 data Liveness = Liveness {
