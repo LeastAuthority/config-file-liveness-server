@@ -28,7 +28,8 @@ library
 executable config-file-liveness-server-exe
   hs-source-dirs:      app
   main-is:             Main.hs
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -fPIC
+  ld-options:          -static
   build-depends:       base
                      , time
                      , directory
