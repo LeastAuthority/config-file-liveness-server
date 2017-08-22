@@ -24,7 +24,8 @@ import Network.Wai.Handler.Warp (
 
 data Config = Config {
   portNumber :: Int,
-  initialModificationTime :: UTCTime
+  initialModificationTime :: UTCTime,
+  monitorPath :: FilePath
   } deriving (Eq, Show)
 
 
@@ -36,7 +37,7 @@ main = do
 
 makeApp :: Config -> Application
 makeApp config =
-  Lib.app1 $ initialModificationTime config
+  Lib.app1 (initialModificationTime config) (monitorPath config)
 
 
 readConfig :: IO Config
@@ -46,7 +47,7 @@ readConfig = do
   let portArg = textArgs !! 0
   let Right (portNumber, _) = Read.decimal portArg
 
-  let configPath = textArgs !! 1
-  mtime <- getModificationTime $ Text.unpack configPath
+  let configPath = Text.unpack $ textArgs !! 1
+  mtime <- getModificationTime configPath
 
-  return $ Config portNumber mtime
+  return $ Config portNumber mtime configPath
