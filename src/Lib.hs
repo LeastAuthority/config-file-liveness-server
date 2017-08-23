@@ -5,6 +5,11 @@
 
 module Lib (app1) where
 
+import Network.Socket (
+  Socket
+  , close
+  )
+
 import Control.Monad.IO.Class (liftIO)
 import Data.Time (
   UTCTime
@@ -47,16 +52,18 @@ type LivenessProbeAPI1 = Get '[JSON] Liveness
 
 instance ToJSON Liveness
 
-livenessServer1 :: UTCTime -> FilePath -> Server LivenessProbeAPI1
-livenessServer1 initialModificationTime monitorPath = do
+livenessServer1 :: Socket -> UTCTime -> FilePath -> Server LivenessProbeAPI1
+livenessServer1 exitSocket initialModificationTime monitorPath = do
   mtime <- liftIO $ getModificationTime monitorPath
   case mtime == initialModificationTime of
     True  -> return $ Liveness initialModificationTime mtime
-    False -> throwError $ err500 { errBody = "File modified." }
+    False -> do
+      liftIO $ close exitSocket
+      throwError $ err500 { errBody = "File modified." }
 
 livenessProbeAPI :: Proxy LivenessProbeAPI1
 livenessProbeAPI = Proxy
 
-app1 :: UTCTime -> FilePath -> Application
-app1 initialModificationTime monitorPath =
-  serve livenessProbeAPI $ livenessServer1 initialModificationTime monitorPath
+app1 :: Socket -> UTCTime -> FilePath -> Application
+app1 exitSocket initialModificationTime monitorPath =
+  serve livenessProbeAPI $ livenessServer1 exitSocket initialModificationTime monitorPath

@@ -2,6 +2,19 @@
 
 module Main where
 
+import Network.Socket (
+  Socket
+  , socket
+  , listen
+  , bind
+  , Family(AF_INET)
+  , SocketType(Stream)
+  , defaultProtocol
+  , SockAddr(SockAddrInet)
+  , iNADDR_ANY
+  , PortNumber
+  )
+
 import System.IO (FilePath)
 import System.Directory (getModificationTime)
 import Data.Time (
@@ -19,11 +32,13 @@ import Network.Wai (
   Application
   )
 import Network.Wai.Handler.Warp (
-  run
+  runSettingsSocket
+  , defaultSettings
+  , setPort
   )
 
 data Config = Config {
-  portNumber :: Int,
+  portNumber :: PortNumber,
   initialModificationTime :: UTCTime,
   monitorPath :: FilePath
   } deriving (Eq, Show)
@@ -32,12 +47,16 @@ data Config = Config {
 main :: IO ()
 main = do
   config <- readConfig
-  run (portNumber config) (makeApp config)
+  serverSocket <- socket AF_INET Stream defaultProtocol
+  bind serverSocket (SockAddrInet (portNumber config) iNADDR_ANY)
+  listen serverSocket 5
+  let app = makeApp config serverSocket
+  runSettingsSocket defaultSettings serverSocket app
 
 
-makeApp :: Config -> Application
-makeApp config =
-  Lib.app1 (initialModificationTime config) (monitorPath config)
+makeApp :: Config -> Socket -> Application
+makeApp config exitSocket =
+  Lib.app1 exitSocket (initialModificationTime config) (monitorPath config)
 
 
 readConfig :: IO Config
@@ -45,9 +64,9 @@ readConfig = do
   args <- Env.getArgs
   let textArgs = map Encoding.decodeUtf8 args
   let portArg = textArgs !! 0
-  let Right (portNumber, _) = Read.decimal portArg
+  let Right (portNumber, _) = (Read.decimal portArg)
 
   let configPath = Text.unpack $ textArgs !! 1
   mtime <- getModificationTime configPath
 
-  return $ Config portNumber mtime configPath
+  return $ Config (fromIntegral portNumber) mtime configPath

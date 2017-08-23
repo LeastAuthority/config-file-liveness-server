@@ -20,6 +20,7 @@ library
                      , time
                      , aeson
                      , directory
+                     , network
                      , servant
                      , wai
                      , servant-server
@@ -36,6 +37,7 @@ executable config-file-liveness-server-exe
                      , directory
                      , unix
                      , text
+                     , network
                      , wai
                      , warp
                      , config-file-liveness-server
