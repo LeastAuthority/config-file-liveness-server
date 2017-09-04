@@ -68,7 +68,5 @@ extra-package-dbs: []
 # Allow `stack image container` to build a Docker image.
 image:
   container:
-    base: "scratch"
+    base: "leastauthority/alpine-tini:3.6"
     name: "leastauthority/config-file-liveness-server"
-    entrypoints:
-      - "config-file-liveness-server-exe"
